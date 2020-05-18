@@ -4,15 +4,16 @@ require 'json'
 
 module Github
   class Repo
-    attr_reader :name, :link
+    attr_reader :name, :link, :ssh_url
 
-    def initialize(name, link)
+    def initialize(name, link, ssh_url)
       @name = name
       @link = link
+      @ssh_url = ssh_url
     end
 
     def to_storage_string
-      "#{@name},#{@link}"
+      "#{@name},#{@link},#{@ssh_url}"
     end
 
     def to_alfred_hash
@@ -21,7 +22,7 @@ module Github
         subtitle: @link,
         arg: @link,
         text: {
-          copy: @link,
+          copy: @ssh_url,
           largetype: @link
         }
       }
@@ -29,12 +30,12 @@ module Github
 
     class << self
       def from_storage_string(storage_string)
-        name, link = storage_string.split(',')
-        new(name, link)
+        name, link, ssh_url = storage_string.split(',')
+        new(name, link, ssh_url)
       end
 
       def from_api_response(api_response)
-        new(api_response[:full_name], api_response[:html_url])
+        new(api_response[:name] + ( api_response[:archived] ? " [ARCHIVED]" : "" ), api_response[:html_url], api_response[:ssh_url])
       end
     end
   end
